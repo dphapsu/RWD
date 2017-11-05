@@ -1,0 +1,119 @@
+<h1 id="lua-idioms">Lua Idioms</h1>
+
+<h2 id="iolines-iterator">io.lines iterator</h2>
+<p>From: https://www.lua.org/pil/21.1.html</p>
+
+<p>to iterate on a whole file line by line, we do better to use the io.lines iterator. For instance, we can write a complete program to sort the lines of a file as follows:</p>
+
+<figure class="highlight"><pre><code class="language-lua" data-lang="lua">    <span class="kd">local</span> <span class="n">lines</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1">-- read the lines in table 'lines'</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="k">in</span> <span class="nb">io.lines</span><span class="p">()</span> <span class="k">do</span>
+      <span class="nb">table.insert</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="c1">-- sort</span>
+    <span class="nb">table.sort</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="c1">-- write all the lines</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="k">in</span> <span class="nb">ipairs</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="k">do</span> <span class="nb">io.write</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span> <span class="k">end</span></code></pre></figure>
+
+<p>This program sorts a file with 4.5 MB (32K lines) in 1.8 seconds (on a Pentium 333MHz), against 0.6 seconds spent by the system sort program, which is written in C and highly optimized.</p>
+
+<h2 id="other-iterators">Other iterators.</h2>
+<p>From: http://lua-users.org/wiki/ForTutorial
+The second form of the for loop has the syntax:</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">for</span> <span class="n">var</span> <span class="p">{,</span> <span class="n">var</span><span class="p">}</span> <span class="k">in</span> <span class="n">explist</span> <span class="k">do</span> <span class="n">block</span> <span class="k">end</span> 
+</code></pre></div></div>
+<p>explist is evaluated once before the loop is entered. Its results are an iterator function (which sets the var values), a state (from which the values can be read), and an initial value (from which to iterate onwards).</p>
+
+<h3 id="pairstable">pairs(table)</h3>
+
+<p>Lua provides a pairs() function to create the explist information for us to iterate over a table. The pairs() function will allow iteration over key-value pairs. Note that the order that items are returned is not defined, not even for indexed tables.</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">&gt;</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="k">in</span> <span class="nb">pairs</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">do</span> <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">)</span> <span class="k">end</span>
+    <span class="mi">3</span>       <span class="mi">10</span>
+    <span class="mi">1</span>       <span class="mi">3</span>
+    <span class="mi">4</span>       <span class="mi">17</span>
+    <span class="mi">2</span>       <span class="mi">7</span>
+    <span class="n">pi</span>      <span class="mi">3</span><span class="p">.</span><span class="mi">14159</span>
+    <span class="n">banana</span>  <span class="n">yellow</span>
+</code></pre></div></div>
+<h3 id="ipairstable">ipairs(table)</h3>
+
+<p>The ipairs() function will allow iteration over index-value pairs. These are key-value pairs where the keys are indices into an array. The order in which elements are returned is guaranteed to be in the numeric order of the indices, and non-integer keys are simply skipped. Using the same table as in the example above:</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">&gt;</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span><span class="n">value</span> <span class="k">in</span> <span class="nb">ipairs</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">do</span> <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">value</span><span class="p">)</span> <span class="k">end</span>
+    <span class="mi">1</span>       <span class="mi">3</span>
+    <span class="mi">2</span>       <span class="mi">7</span>
+    <span class="mi">3</span>       <span class="mi">10</span>
+    <span class="mi">4</span>       <span class="mi">17</span>
+</code></pre></div></div>
+<p>Notice how only the array part of the table is displayed because only these elements have index keys.</p>
+
+<h3 id="next">next()</h3>
+
+<p>The next(table [,index]) function helps iterate over a table. When given a table and an index it returns the next key-value pair from the table, e.g.,</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">&gt;</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="c1">-- index will be nil, the beginning</span>
+    <span class="mi">1</span>       <span class="mi">3</span>
+    <span class="o">&gt;</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">pi</span>      <span class="mi">3</span><span class="p">.</span><span class="mi">14159</span>
+</code></pre></div></div>
+<p>As with pairs(), the order in which items are returned is not defined; index keys can be returned in any order, not just numerically increasing. The pairs() function returns an explist containing next() so we can iterate over tables. We can pass our own expression list to the for statement as follows:</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">&gt;</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="k">in</span> <span class="nb">next</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="kc">nil</span> <span class="k">do</span> <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">)</span> <span class="k">end</span>
+    <span class="mi">1</span>       <span class="mi">3</span>
+    <span class="mi">2</span>       <span class="mi">7</span>
+    <span class="mi">3</span>       <span class="mi">10</span>
+    <span class="mi">4</span>       <span class="mi">17</span>
+    <span class="n">pi</span>      <span class="mi">3</span><span class="p">.</span><span class="mi">14159</span>
+    <span class="n">banana</span>  <span class="n">yellow</span>
+</code></pre></div></div>
+<p>We pass next,table,nil as the expression list to the for statement. We are saying here that we want to use the iterator function next(), on the table t, starting at nil (the beginning). The for statement keeps executing until the next() function returns nil (the end of the table).</p>
+
+<h3 id="iolines">io.lines()</h3>
+
+<p>Lua provides other useful iterators, like io.lines([filename]) in the io library. We can demonstrate this by creating a custom file containing some lines of text.</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">&gt;</span> <span class="nb">io.output</span><span class="p">(</span><span class="nb">io.open</span><span class="p">(</span><span class="s2">"my.txt"</span><span class="p">,</span><span class="s2">"w"</span><span class="p">))</span>
+    <span class="o">&gt;</span> <span class="nb">io.write</span><span class="p">(</span><span class="s2">"This is\nsome sample text\nfor Lua."</span><span class="p">)</span>
+    <span class="o">&gt;</span> <span class="nb">io.close</span><span class="p">()</span>
+</code></pre></div></div>
+<p>We created a file called “my.txt”, wrote three lines to it and closed it. Now we can read it using the io.lines iterator:</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">&gt;</span> <span class="k">for</span> <span class="n">line</span> <span class="k">in</span> <span class="nb">io.lines</span><span class="p">(</span><span class="s2">"my.txt"</span><span class="p">)</span> <span class="k">do</span> <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">end</span>
+    <span class="n">This</span> <span class="n">is</span>
+    <span class="n">some</span> <span class="n">sample</span> <span class="n">text</span>
+    <span class="k">for</span> <span class="n">Lua</span><span class="p">.</span>
+</code></pre></div></div>
+<h3 id="filelines">file:lines()</h3>
+
+<p>The io library provides another way to iterate over lines of a text file.</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">&gt;</span> <span class="n">file</span> <span class="o">=</span> <span class="nb">assert</span><span class="p">(</span><span class="nb">io.open</span><span class="p">(</span><span class="s2">"my.txt"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">))</span>
+    <span class="o">&gt;</span> <span class="k">for</span> <span class="n">line</span> <span class="k">in</span> <span class="n">file</span><span class="p">:</span><span class="n">lines</span><span class="p">()</span> <span class="k">do</span> <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">end</span>
+    <span class="n">This</span> <span class="n">is</span>
+    <span class="n">some</span> <span class="n">sample</span> <span class="n">text</span>
+    <span class="k">for</span> <span class="n">Lua</span><span class="p">.</span>
+    <span class="o">&gt;</span> <span class="n">file</span><span class="p">:</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div></div>
+<p>What are the differences with io.lines()?</p>
+
+<p>You have to explicitly open and close the file. One advantage of this is that if the file cannot be opened, you can handle this failure gracefully. Here, the assert has the same effect as io.lines: the interpreter stops with an error message pointing to the faulty line; but you can test for a nil value of file and do something else.</p>
+
+<p>Another advantage is that you can start the loop on any line:</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="n">file</span> <span class="o">=</span> <span class="nb">assert</span><span class="p">(</span><span class="nb">io.open</span><span class="p">(</span><span class="s2">"list.txt"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">))</span>
+    <span class="kd">local</span> <span class="n">line</span> <span class="o">=</span> <span class="n">file</span><span class="p">:</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">string.sub</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">~=</span> <span class="s1">'#'</span> <span class="k">then</span>
+      <span class="n">ProcessLine</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="c1">-- File doesn't start with a comment, process the first line</span>
+    <span class="k">end</span>
+    <span class="c1">-- We could also loop on the first lines, while they are comment</span>
+    <span class="c1">-- Process the remainder of the file</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="k">in</span> <span class="n">file</span><span class="p">:</span><span class="n">lines</span><span class="p">()</span> <span class="k">do</span>
+      <span class="n">ProcessLine</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="n">file</span><span class="p">:</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div></div>
+<h3 id="custom-iterators">Custom iterators</h3>
+
+<p>We can write our own iterators, similiar to next(), to iterate over any data sequence. This is covered in more detail in the IteratorsTutorial.</p>

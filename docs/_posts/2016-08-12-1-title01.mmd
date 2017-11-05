@@ -1,0 +1,43 @@
+The purpose of this blog is to keep notes and document my efforts to create something cool in Minecraft. Namely TURTLE 
+WORLD DOMINATION!!! Insert evil laugh here. Seriously. It is an attempt to make minecraft turtles easier to use. They are already quite powerful but to use them you have to write scripts that look like this.
+
+```lua
+if isRunning then
+    if #tArgs > 3 then
+        for i=4, #tArgs do
+            local flag = tArgs[i]
+            if flag == "--no_refuel" then
+                autoRefuel = false
+                noRefuelFlagSet = true
+            elseif flag == "--left" then
+                lookingRight = false
+                lookingLeftFlagSet = true
+            elseif flag == "--down" then
+                lookingUp = true
+                lookingDownFlagSet = true
+            end
+        end
+    end
+end
+
+Blah Blah Blah
+   Blah De Blah
+   Blah De Blah Blah
+Blech!
+```
+
+While looking for interesting programs I found ACT by McLeopold. It is an application specific language (ASL) that uses one and two letter commands strung together to control the turtle. For example:
+
+```
+do Dff(?uDuu)48d48
+```
+
+chops down a tree and returns. 
+
+It makes doing simple to moderately complex things easy. It reminded me of the APL and J programming languages. So I thought about all of the awesome things that could be done if ACT was a complete language and covered all of the abilities of minecraft turtles.
+
+My first thought was to extend ACT but life has taught me that it is usually easier to start from scratch than to add on to someone else's work. Besides, learning how to write an interpreter would not only be cool but I could then make an ASL that would do whatever I wanted and I would understand how to extend it anytime. Awesome!
+
+I am using "Writing Compilers & Interpreters An Applied Approach" by Ronald Mac (ISBN 0-471-50968-X) as a text book. There are more current texts such as Holub's "Compiler Design in C" (ISBN 0-13-155045-4) but Mac is less theoretical and more introductory and I am not really a programmer. So I am working my way through Mac and writing he exercises in Lua. That way I learn interpreters and Lua at the same time. 
+
+It is my intention to eventually use turtles for everything such as sorting items, moving items, keeping minimum number of items stocked, crafting, construction of buildings, terraforming, and of course, mining and digging.

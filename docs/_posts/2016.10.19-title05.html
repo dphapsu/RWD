@@ -1,0 +1,174 @@
+<div class="TOC">
+<ul>
+<li><a href="#theactlanguage">The ACT Language</a></li>
+<li><a href="#additionsiplantomake">Additions I Plan To Make</a>
+
+<ul>
+<li><a href="#variables">Variables</a></li>
+<li><a href="#functionsmacros">Functions/Macros</a></li>
+<li><a href="#flowcontrolstructures">Flow Control Structures</a>
+
+<ul>
+<li><a href="#conditionalstatements">Conditional Statements</a></li>
+<li><a href="#comparisonoperators">Comparison Operators</a></li>
+<li><a href="#indexmodifiersrejected">Index Modifiers (Rejected)</a></li>
+<li><a href="#loops">Loops</a></li>
+</ul></li>
+<li><a href="#comments">Comments</a></li>
+</ul></li>
+<li><a href="#futurechanges">Future Changes</a></li>
+</ul>
+</div>
+
+<h1 id="theactlanguage">The ACT Language</h1>
+
+<p>The ACT script by McLeopold is a simple but extremely useful Aplication Specific Language (APL) for Minecraft turtles. It is terse with each command consisting of one or two characters. The commands are as follows:</p>
+
+<p>The act mini-language is easy and mnemonic. An act string is a sequence of commands all smashed to together, similar to a regular expression. For example, to move the turtle forward 2, turn right and go forward 3 you would use this string: &#8220;f2rf3&#8221;.</p>
+
+<p>Movement commands - these are 1 character in lower case. They can be followed by a number to specify how many times to move:</p>
+
+<ul>
+<li>f - forward</li>
+<li>b - back</li>
+<li>u - up</li>
+<li>d - down</li>
+<li>r - right</li>
+<li>l - left</li>
+</ul>
+
+<p>Other commands - these commands are 1 character and can be followed by a number.</p>
+
+<ul>
+<li>s - select, the number the slot the will be selected (1&#8211;16)</li>
+<li>z - sleep (not a turtle command, but useful), the number is how many seconds to pause for</li>
+<li>R - refuel, the number following is how much of the current slot to consume, select the correct slot number first</li>
+</ul>
+
+<p>Action Commands - Turtles can do many actions in three directions, forward, up and down. The following commands are all 2 characters where the second character is the direction (f-forward, u-up, d-down). The first character is upper case and the second is lower:</p>
+
+<ul>
+<li>D - dig (Df, Du, Dd)</li>
+<li>P - place (Pf, Pu, Pd)</li>
+<li>E - drop (E for eject) (Ef, Eu, Ed)</li>
+<li>A - attack (Af, Au, Ad)</li>
+<li>S - suck (Sf, Su, Sd)</li>
+</ul>
+
+<p>Decision Commands - Turtles can detect blocks and compare blocks to their inventory. These commands 2 characters which are a symbol followed by a direction (f, u, d). These will stop the current action block from continuing:</p>
+
+<ul>
+<li>? - detect (?f, ?u, ?d)</li>
+<li>= - compare (=f, =u, =d) (use the select command to pick the block to compare with first</li>
+</ul>
+
+<p>Parenthesis</p>
+
+<p>You can use parenthesis () to group some actions and repeat them. &#8220;(Pfuf)5&#8221; will build a staircase for you if your turtle has stairs in the selected slot. The turtle will place a block forward, move up, move forward, then repeat the process a total of 5 times. Parenthesis can be nested.</p>
+
+<p>do is the command line interface. You can quickly give your turtle a few commands. For example, if your turtle is on top of a block and you&#8217;d like to move it below the block you can type the following:</p>
+
+<pre><code>do bd2f
+</code></pre>
+
+<p>The turtle will back up, move down 2 below the block, then move back forward under the block.</p>
+
+<p>act is the api that you can use in your scripts. To do the same actions in a script, put the following in a file:</p>
+
+<pre><code class="lua">os.loadAPI(&quot;act&quot;)
+act.act(&quot;bd2f&quot;)
+</code></pre>
+
+<p>Here is an example script to chop down a tree. After placing a turtle in front of a tree trunk, we want the turtle to chop (dig) the first log at the bottom, move underneath the trunk, then chop up to the top, then come back down. We&#8217;ll repeat the dig up and move up commands as long as we detect a block above us. If the ?u (detectUp) fails, the action will skip out of the repeated loop and move on to going down 48. If the tree is not 48 blocks high, the turtle will move down to the ground, then fail to continue moving, which is good enough for us to retrieve it. (Unless there is a hole below the tree?)</p>
+
+<pre><code>do Dff(?uDuu)48d48
+</code></pre>
+
+<h1 id="additionsiplantomake">Additions I Plan To Make</h1>
+
+<p>There are 4 additions ACT needs to become a full featured language.</p>
+
+<ol>
+<li>Variables</li>
+<li>Functions/Macros</li>
+<li>Flow Control Structures
+
+<ol>
+<li>Conditional Statements</li>
+<li>Comparison Operators</li>
+<li>Index Modifiers</li>
+<li>Loops</li>
+</ol></li>
+<li>Comments</li>
+</ol>
+
+<h2 id="variables">Variables</h2>
+
+<p>As much as possible I want to make things as brain dead simple to implement and use as possible. Variable assignments will take the form of</p>
+
+<pre><code>@foo@ =:10
+(Du)@foo@
+</code></pre>
+
+<p>Will dig up ten times. Variable names can contain any alphanumeric, underscore, or hyphen. Names are case sensitive. If variables are called before being defined I don&#8217;t know whether to print an error message and give them a default value (1 or 0) and gracefully continue or abort with an error message. Gonna have to work out what the scope should be. There is probably good reason to have global (declared outside of functions/macros) and local (declared in functions/macros). Scoping should br automatic without keywords.</p>
+
+<h2 id="functionsmacros">Functions/Macros</h2>
+
+<p>These will take the form</p>
+
+<pre><code>%foo(@n@ @z@)% =: D@z@(Du)@n@
+(%foo(5 u)%)10
+</code></pre>
+
+<p>This passes a table of parameters to the function. Also need to implement return values so you can have</p>
+
+<pre><code>%foo% =: @bar@+1
+@bar@ =: 5
+(Du)%foo%
+</code></pre>
+
+<p>will dig up 6 times</p>
+
+<h2 id="flowcontrolstructures">Flow Control Structures</h2>
+
+<h3 id="conditionalstatements">Conditional Statements</h3>
+
+<p>The flow control structure will be</p>
+
+<pre><code>??(Conditional Statement)(True Block)(False Block)
+</code></pre>
+
+<p>Either the True Block or the False Block can be empty.</p>
+
+<h3 id="comparisonoperators">Comparison Operators</h3>
+
+<p>==, !=, &gt;, &lt;, &lt;=, &gt;=</p>
+
+<h3 id="indexmodifiersrejected">Index Modifiers (Rejected)</h3>
+
+<p>&#8220;++&#8221;, &#8220;&#8211;&#8221;</p>
+
+<p>++@foo@ will increment @foo@ before it is evaluated and @foo@++ will increment @foo@ after it is evaluated. There is one problem. I really want to use &#8220;&#8211;&#8221; for a line comment and &#8211;[[ and ]] for block comments. Hmmmm. Maybe I could use &#8220;ic&#8221; for increment and &#8220;dc&#8221; for decrement. Not as intuitive though. Or maybe hashs, &#8220;##&#8221;, and &#8220;##[[&#8220;&#8221; and &quot;]]&#8221;. Never mind. This is adding too much complexity. We will just do it the old fashioned way of modifying the index in the Loop Body.</p>
+
+<h3 id="loops">Loops</h3>
+
+<p>There are two forms, the pre loop form</p>
+
+<pre><code>((Conditional Statement)(Loop body))
+</code></pre>
+
+<p>In this form the Conditional Statement is evaluated and if true the Loop Body is executed.
+and the post loop form.</p>
+
+<pre><code>((Loop Body)(Conditional Statement))
+</code></pre>
+
+<p>With this form the Loop Body is always executed at least once.</p>
+
+<h2 id="comments">Comments</h2>
+
+<p>Will use the Lua style comments &#8220;&#8211;&#8221;, &#8220;&#8211;[[&#8220;, and &#8221;]]&#8221;</p>
+
+<h1 id="futurechanges">Future Changes</h1>
+
+<p>Addition of communication functions so that accessing and controlling turtles remotely will be close to trivial. Will have to experiment with that some to see exactly how that should work.</p>

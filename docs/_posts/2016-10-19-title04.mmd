@@ -1,0 +1,18 @@
+{{TOC}} 
+
+# Thoughts On Implementation
+## Variables
+ Variables can be implemented as a Lua table with the index being the variable string.
+
+```lua
+ global_variables={}
+ global_variables[@foo@]=5
+ global_variables[@bar@]="cobblestone"
+ ```
+
+## Tokenizing
+Parsing into tokens can be done at least partially by using tables as case statements. 
+
+## Executing Loops and Complex Funcitons
+
+In some cases it might be easier to have the program generate a string of commands and then execute that string with "LoadString()".
