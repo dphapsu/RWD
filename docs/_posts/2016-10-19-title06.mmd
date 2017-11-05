@@ -1,0 +1,179 @@
+
+
+{{TOC}}
+# The ACT Language
+
+The ACT script by McLeopold is a simple but extremely useful Aplication Specific Language (APL) for Minecraft turtles. It is terse with each command consisting of one or two characters. The commands are as follows:
+
+
+The act mini-language is easy and mnemonic. An act string is a sequence of commands all smashed to together, similar to a regular expression. For example, to move the turtle forward 2, turn right and go forward 3 you would use this string: "f2rf3".
+
+
+Movement commands - these are 1 character in lower case. They can be followed by a number to specify how many times to move:
+
+* f - forward
+* b - back
+* u - up
+* d - down
+* r - right
+* l - left
+
+
+Other commands - these commands are 1 character and can be followed by a number.
+
+* s - select, the number the slot the will be selected (1-16)
+* z - sleep (not a turtle command, but useful), the number is how many seconds to pause for
+* R - refuel, the number following is how much of the current slot to consume, select the correct slot number first
+
+
+Action Commands - Turtles can do many actions in three directions, forward, up and down. The following commands are all 2 characters where the second character is the direction (f-forward, u-up, d-down). The first character is upper case and the second is lower:
+
+* D - dig (Df, Du, Dd)
+* P - place (Pf, Pu, Pd)
+* E - drop (E for eject) (Ef, Eu, Ed)
+* A - attack (Af, Au, Ad)
+* S - suck (Sf, Su, Sd)
+
+
+Decision Commands - Turtles can detect blocks and compare blocks to their inventory. These commands 2 characters which are a symbol followed by a direction (f, u, d). These will stop the current action block from continuing:
+
+* ? - detect (?f, ?u, ?d)
+* = - compare (=f, =u, =d) (use the select command to pick the block to compare with first
+
+
+Parenthesis
+
+
+You can use parenthesis () to group some actions and repeat them. "(Pfuf)5" will build a staircase for you if your turtle has stairs in the selected slot. The turtle will place a block forward, move up, move forward, then repeat the process a total of 5 times. Parenthesis can be nested.
+
+
+do is the command line interface. You can quickly give your turtle a few commands. For example, if your turtle is on top of a block and you'd like to move it below the block you can type the following:
+
+```
+do bd2f
+```
+
+The turtle will back up, move down 2 below the block, then move back forward under the block.
+
+
+act is the api that you can use in your scripts. To do the same actions in a script, put the following in a file:
+
+
+```lua
+os.loadAPI("act")
+act.act("bd2f")
+```
+
+Here is an example script to chop down a tree. After placing a turtle in front of a tree trunk, we want the turtle to chop (dig) the first log at the bottom, move underneath the trunk, then chop up to the top, then come back down. We'll repeat the dig up and move up commands as long as we detect a block above us. If the ?u (detectUp) fails, the action will skip out of the repeated loop and move on to going down 48. If the tree is not 48 blocks high, the turtle will move down to the ground, then fail to continue moving, which is good enough for us to retrieve it. (Unless there is a hole below the tree?)
+
+```
+do Dff(?uDuu)48d48
+```
+
+# Additions I Plan To Make
+
+There are 4 additions ACT needs to become a full featured language.
+
+
+1. Variables
+2. Functions/Macros
+3. Flow Control Structures
+    1. Conditional Statements
+    2. Comparison Operators
+    3. Index Modifiers
+    4. Loops
+4. Comments
+
+
+## Variables 
+
+As much as possible I want to make things as brain dead simple to implement and use as possible. Variable assignments will take the form of
+
+
+```
+@foo@ =:10
+(Du)@foo@
+```
+
+Will dig up ten times. Variable names can contain any alphanumeric, underscore, or hyphen. Names are case sensitive. If variables are called before being defined I don't know whether to print an error message and give them a default value (1 or 0)  and gracefully continue or abort with an error message. Gonna have to work out what the scope should be. There is probably good reason to have global (declared outside of functions/macros) and local (declared in functions/macros). Scoping should br automatic without keywords.
+
+
+## Functions/Macros
+
+
+These will take the form
+
+```
+%foo(@n@ @z@)% =: D@z@(Du)@n@
+(%foo(5 u)%)10
+```
+
+This passes a table of parameters to the function. Also need to implement return values so you can have
+
+```
+%foo% =: @bar@+1
+@bar@ =: 5
+(Du)%foo%
+```
+will dig up 6 times
+## Flow Control Structures
+
+### Conditional Statements
+
+
+The flow control structure will be
+
+```
+??(Conditional Statement)(True Block)(False Block)
+```
+
+Either the True Block or the False Block can be empty.
+
+### Comparison Operators
+
+==, !=, >, <, <=, >=
+
+### Index Modifiers (Rejected)
+"++", "--"
+
+++@foo@ will increment @foo@ before it is evaluated and @foo@++ will increment @foo@ after it is evaluated. There is one problem. I really want to use "--" for a line comment and --[[ and ]] for block comments. Hmmmm. Maybe I could use "ic" for increment and "dc" for decrement. Not as intuitive though. Or maybe hashs, "##", and "##[["" and "]]". Never mind. This is adding too much complexity. We will just do it the old fashioned way of modifying the index in the Loop Body.
+
+### Loops
+
+There are two forms, the pre loop form
+
+```
+((Conditional Statement)(Loop body))
+```
+In this form the Conditional Statement is evaluated and if true the Loop Body is executed.
+
+and the post loop form.
+
+```
+((Loop Body)(Conditional Statement))
+```
+With this form the Loop Body is always executed at least once. The post loop form is strictly not necessary but is included for convienence, and may be removed and or never implemented as it is redundant.
+## Comments
+Will use the Lua style comments "--" doe line comments and  "--[[", "]]" for block comments. This will allow the debugging technique of including or excluding code blocks by deleting or inserting a single "-" at the beginning of the "--[[".
+
+```lua
+--[[
+Code is excluded
+--]]
+
+---[[
+Code is included
+--]]
+```
+
+# Future Changes
+
+## Communication Functions
+Addition of communication functions so that accessing and controlling turtles remotely will be close to trivial. This will include peer to peer and boss-minion communicaiton. Will have to experiment with that some to see exactly how that should work. Perhaps these functions will start with "C".
+
+## GPS Functions
+Functions to make it easy to use GPS. Make it brain dead simple to use by letting the program do not just all of theheavy lifting but all of the lifting. For example if a user calls "Gg", for GPS get position, if the user has not set up GPS communication the program will do everything it can to initialize the GPS system before returning a position. If it gets conflicting data it will use the most consistant data and print a message tothe error log.
+
+## Error Logging
+
+Oh that's another thing, an error log. As much as possible the program will continue despite errors but it will log any unexpected occurances.
