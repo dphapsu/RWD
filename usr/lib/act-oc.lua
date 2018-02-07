@@ -33,12 +33,8 @@
 --   d 48 - for i = 1, 48 do robot.down() end
 --
 -- You can use the language in other scripts like so
---
--- os.loadAPI("act")
--- act.act("f5rrf5ll")
 
--- act internal functions
--- print("Starting act-oc")
+
 --[[
 function dump(o)
    if type(o) == 'table' then
@@ -55,24 +51,37 @@ function dump(o)
       return tostring(o)
    end
 end
-]]--
-local inspect = require("inspect")
+--]]
 
+
+
+--[[
+-- Error logging code 
+error_log = filesystem.open("/home/error.log","a")
+function elog(estring,"\n\n")
+  print(estring)
+  error_log.write(estring)
+end
+
+elog("******************** New Run ********************")
+--]]
+
+local inspect = require("inspect")
 local robot = require( "robot" )
 local computer = require( "computer" )
 local component = require("component")
+
 local g
 if component.isAvailable("generator") then
   g = component.generator
-  -- print("Line 62")
 end
--- print("Line 67: " .. tostring(g)
--- inspect(g)
+
 
 
 local forward = 0
 local up = 1
 local down = 2
+
 local tMove = {[forward] = robot.forward,
                [up] = robot.up,
                [down] = robot.down}
@@ -89,6 +98,7 @@ local tPlace = {[forward] = robot.place,
                 [up] = robot.placeUp,
                 [down] = robot.placeDown}
 
+---[[
 local function tryDir(dir)
   while not tMove[dir]() do
     -- print("tMove[dir] is ",tMove[dir])
@@ -117,12 +127,24 @@ function tryDown()
 end
 
 local currentSlot = 1
-function select(slot)
-  currentSlot = slot
-  robot.select(slot)
-  return true
-end
+--]]
 
+--[[
+print("Before select.")
+function pick(slot)
+  print("In select.")
+  --currentSlot = slot
+  --robot.select(slot)
+   return true
+end
+--]]
+
+
+
+
+
+
+---[[
 local function findSimilar()
   for s = 1, 16 do
     if s ~= currentSlot then
@@ -136,7 +158,9 @@ local function findSimilar()
   robot.select(currentSlot)
   return nil
 end
+--]]
 
+---[[
 local function placeDir(dir)
   if robot.count(currentSlot) == 1 then
     local resupplySlot = findSimilar()
@@ -156,7 +180,9 @@ local function placeDir(dir)
     return tPlace[dir]()
   end
 end
+--]]
 
+---[[
 function place()
   return placeDir(forward)
 end
@@ -171,7 +197,9 @@ end
 
 -- This code was mostly copied from:
 -- http://lua-users.org/wiki/SleepFunction
---[[
+--]]
+
+---[[
 function sleep(n)  -- seconds
   -- print("sleep called is argument ",n)
   local clock = os.clock
@@ -194,10 +222,12 @@ function sleep(n)  -- seconds
   return true
 end
 --]]
+
 -- warning: clock can eventually wrap around for sufficiently large n
 -- (whose value is platform dependent).  Even for n == 1, clock() - t0
 -- might become negative on the second that clock wraps.
 
+---[[
 function rDig()
   -- print("rDig entered")
   -- print("robot.detect = ",robot.detect())
@@ -291,9 +321,10 @@ function getNumber(s, pos, max, default)
 end
 
 -- print("Reading in")
-
-
+--]]
+--print("BP4")
 function act(plan)
+  ---[[
   local pos = 1
   local max = plan:len()
   while pos <= max do
@@ -413,4 +444,6 @@ function act(plan)
     pos = pos + 1
   end
   return true
+  --]]
 end
+--]]
