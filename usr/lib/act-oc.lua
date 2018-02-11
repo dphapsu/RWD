@@ -1,3 +1,4 @@
+local version = "2018.02.11.1418"
 -- VERSION 2016.11.05 1835
 -- TODO
 --   history
@@ -53,7 +54,13 @@ function dump(o)
 end
 --]]
 
-
+--[[
+TODO
+  1. Add variables via a table. 
+    - $var_name$ will retrieve the variable. 
+    - $$var_naame$value$ will set the variable.
+  2. Make sure white space doesn't upset the interpreter.
+--]]
 
 --[[
 -- Error logging code 
@@ -256,6 +263,15 @@ function tmpFunc()
   g.insert()
 end
 
+-- Variable substitution functions.
+--[[
+function ReadVariable()
+end
+
+function WriteVariable()
+end
+--]]
+
 local tHandlers = {
     -- move
   ["f"] = robot.forward,
@@ -304,6 +320,12 @@ local tHandlers = {
   ["=d"] = robot.compareDown,
   ["=="] = robot.compareTo,
 
+  --[[
+    -- Varible substitution
+  ["<"]  = ReadVariable()
+  ["<<"] = WriteVariable()
+  --]]
+
   ["Z"] = os.sleep
 }
 
@@ -320,13 +342,36 @@ function getNumber(s, pos, max, default)
   end
 end
 
--- print("Reading in")
 --]]
---print("BP4")
 function act(plan)
   ---[[
+  print("Running version", version)
   local pos = 1
   local max = plan:len()
+
+  -- Remove white space from plan
+  local white_space = {"\t","\n"," "} 
+  local cleaned_plan = ""
+
+  while pos <= max do
+    local c = plan:sub(pos,pos)
+    -- print(c)
+    -- print(string.find(white_space, c))
+    if white_space[c] then
+
+      -- print(pos)
+    else
+      -- print("else")
+      cleaned_plan = cleaned_plan .. c
+    end
+    pos = pos + 1
+    -- print("pos at end of chain")
+  end
+
+  plan = cleaned_plan
+  -- print("cleaned plan is ",cleaned_plan)
+  -- End remove white space
+  pos = 1
   while pos <= max do
     local c = plan:sub(pos, pos)
     -- Begin handling sub plan.
@@ -340,11 +385,11 @@ function act(plan)
           p = p - 1
         elseif plan:sub(pos, pos) == "(" then
           p = p + 1
-        end
+        end --elseif
         if p > 0 then
           sub_plan = sub_plan .. plan:sub(pos, pos)
-        end
-      end
+        end --if
+      end -- while (343)
       -- get optional count
       local n = nil
       n, pos = getNumber(plan, pos, max, 1)
@@ -353,10 +398,10 @@ function act(plan)
         if not act(sub_plan, n) then
           print("sub plan failure")
           return false
-        end
-      end
+        end -- if
+      end -- for
       -- End handling sub plan.
-    else
+    else -- if(339)
       -- Begin getting 2 character commands
       if c == "D"
         or c == "A"
@@ -374,9 +419,7 @@ function act(plan)
       -- call handler
       local fn = tHandlers[c]
       local tmp = tHandlers[c]
-      -- print("Call "..c.." is handled by: ")
--- print("c is ",c)
--- print( "fn is ",fn )
+
       -- Get optional following number for commands that can use one.
       if fn then
         -- print( "if at line 348" )
