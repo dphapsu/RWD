@@ -1,4 +1,4 @@
-local version = "2018.02.11.1418"
+local version = "2018.02.12.1606"
 -- VERSION 2016.11.05 1835
 -- TODO
 --   history
@@ -342,43 +342,56 @@ function getNumber(s, pos, max, default)
   end
 end
 
+function inlist(list, c)
+  local v
+  for _,v in pairs(list) do
+    if v == c then
+      return true
+    end
+  end
+  return false
+end
+
 --]]
 function act(plan)
   ---[[
   print("Running version", version)
+  print("plan is|",plan)
   local pos = 1
   local max = plan:len()
 
   -- Remove white space from plan
-  local white_space = {"\t","\n"," "} 
+  local white_space = {"\t","\n"," ","\r"} 
   local cleaned_plan = ""
-
+--[[]
   while pos <= max do
+    --print("In while.")
     local c = plan:sub(pos,pos)
-    -- print(c)
-    -- print(string.find(white_space, c))
-    if white_space[c] then
-
-      -- print(pos)
-    else
-      -- print("else")
+    if not inlist(white_space, c) then
+      --print("In if.")
       cleaned_plan = cleaned_plan .. c
     end
     pos = pos + 1
-    -- print("pos at end of chain")
   end
 
   plan = cleaned_plan
+  print("clean plan is|",plan)
   -- print("cleaned plan is ",cleaned_plan)
   -- End remove white space
+  --]]
+
   pos = 1
   while pos <= max do
     local c = plan:sub(pos, pos)
     -- Begin handling sub plan.
-    if c == "(" then
+
+    if inlist(white_space, c) then
+      pos = pos + 1
+    elseif c == "(" then
       -- read until matching )
       local p = 1
       local sub_plan = ""
+
       while p > 0 do
         pos = pos + 1
         if plan:sub(pos, pos) == ")" then
@@ -390,10 +403,13 @@ function act(plan)
           sub_plan = sub_plan .. plan:sub(pos, pos)
         end --if
       end -- while (343)
+
+
       -- get optional count
       local n = nil
       n, pos = getNumber(plan, pos, max, 1)
       -- call recursively
+
       for i = 1, n, 1 do
         if not act(sub_plan, n) then
           print("sub plan failure")
@@ -401,6 +417,8 @@ function act(plan)
         end -- if
       end -- for
       -- End handling sub plan.
+
+
     else -- if(339)
       -- Begin getting 2 character commands
       if c == "D"
@@ -463,30 +481,21 @@ function act(plan)
 
         else
           --print( "else at line 388" )
-
-
-          -- all other handlers, number gets passed to function
           local n = nil
           n, pos = getNumber(plan, pos, max)
-
-          -- Check to see if there is a handler for that command.
-          -- print("fn is ",fn)
-          -- print("fn(n) is ",fn(n))
           if not fn(n) then
-            print("Can't perform action: " .. c)
+            print("Can't perform action: " .. c, "at position ",pos, ".")
             -- return false
           end
         end
 
       else
         -- If there is no handler for the command then you end up here.
-        print("Unknown command: " .. c)
+        print("Unknown command: " .. c, "at position ",pos, ".")
         return false
       end
     end
     pos = pos + 1
   end
   return true
-  --]]
 end
---]]
